@@ -1,0 +1,7 @@
+1. resnet 与 se_resnet 只是在残差通道的最后+/-一个se的attention
+2. resnet 与 resnext 只是在中间3*3卷积的地方多了一个group参数控制
+3. 对比一下mobileNet的网络结构，最终的几个block
+
+3. CSPNet 网络实现
+
+
