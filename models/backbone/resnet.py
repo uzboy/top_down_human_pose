@@ -2,6 +2,7 @@ import torch.nn as nn
 from models.base_module import NetBase
 from utils.utils import kaiming_init, constant_init
 
+
 class BasicBlock(nn.Module):
 
     expansion=1

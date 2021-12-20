@@ -1,5 +1,5 @@
-from abc import abstractmethod
 import torch.nn as nn
+from abc import abstractmethod
 
 
 class NetBase(nn.Module):
