@@ -10,7 +10,10 @@ class NetBase(nn.Module):
     def forward(self, x):
         ""
 
+    def freeze_model(self):
+        for param in self.parameters():
+            param.requires_grad = False
+
     @abstractmethod
     def init_weight(self):
         ""
-

@@ -1,6 +1,6 @@
 import os
 import torch.nn as nn
-from utils.utils import load_checkpoint
+from utils.utils import save_checkpoint
 from models.head.build_head import build_head
 from models.backbone.build_backbone import build_backbone
 
@@ -11,20 +11,33 @@ class Model(nn.Module):
         super(Model, self).__init__()
         self.backbone = build_backbone(cfg.backbone)
         self.head = build_head(cfg.head)
-        resum_path = None
+
         try:
-            resum_path = cfg.resum_path
+            self.save_backbone_prev = cfg.backbone.pre_name
+            self.save_backbone_base = cfg.backbone.base_path
         except:
-            resum_path = None
+            self.save_backbone_base = None
+            self.save_backbone_prev = None
+        if self.save_backbone_base is not None and not os.path.exists(self.save_backbone_base):
+            os.makedirs(self.save_backbone_base)
 
-        self.init_weights(resum_path)
+        try:
+            self.save_head_prev = cfg.head.pre_name
+            self.save_head_base = cfg.head.base_path
+        except:
+            self.save_head_base = None
+            self.save_head_prev = None
+        if self.save_head_base is not None and not os.path.exists(self.save_head_base):
+            os.makedirs(self.save_head_base)
 
-    def init_weights(self, resum_path):
-        if resum_path is not None and os.path.exists(resum_path):
-            load_checkpoint(self, resum_path)
-        else:
-            self.backbone.init_weight()
-            self.head.init_weight()
+    def save_ckps(self, epoch_index):
+        if self.save_backbone_base is not None and self.save_backbone_prev is not None:
+            save_file_name = os.path.join(self.save_backbone_base, self.save_backbone_prev + "_%d.pth" % (epoch_index + 1))
+            save_checkpoint(self.backbone, save_file_name)
+
+        if self.save_backbone_base is not None and self.save_backbone_prev is not None:
+            save_file_name = os.path.join(self.save_backbone_base, self.save_backbone_prev + "_%d.pth" % (epoch_index + 1))
+            save_checkpoint(self.backbone, save_file_name)
 
     def get_loss(self, loss_inputs):
         return self.head.get_loss(loss_inputs)
