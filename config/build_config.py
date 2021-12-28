@@ -1,9 +1,9 @@
 from config.mobile_v2_config import config as MobileNetV2
 from config.mobile_v3_config import config as MobileNetV3
-from resnet_50_config import config as ResNet50
-from resnet_50_se_config import config as ResNetSe50
-from resnext_50_config import config as ResNext50
-from resnext_50_se_config import config as ResNextSe50
+from config.resnet_50_config import config as ResNet50
+from config.resnet_50_se_config import config as ResNetSe50
+from config.resnext_50_config import config as ResNext50
+from config.resnext_50_se_config import config as ResNextSe50
 from config.rsn_config import config as RSN
 from config.scnet_config import config as SCNet
 from config.mspn_config import config as MSPN

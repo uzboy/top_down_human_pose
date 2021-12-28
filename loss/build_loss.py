@@ -1,14 +1,20 @@
 from loss.joint_mse import JointsMSELoss
-from loss.regression_mse import RegressionMSELoss
 from loss.joint_ohk_mse import JointsOHKMMSELoss
 from loss.combined_target_mse import CombinedTargetMSELoss
+from loss.regression_l1_loss import L1Loss, SmoothL1Loss, MPJPELoss
+from loss.regression_l2_loss import MSELoss
+from loss.regression_wing_loss import WingLoss
 
 
 LOSS = {
     "JointsMSELoss": JointsMSELoss,
     "JointsOHKMMSELoss": JointsOHKMMSELoss,
     "CombinedTargetMSELoss": CombinedTargetMSELoss,
-    "RegressionMSELoss": RegressionMSELoss
+    "L1Loss":L1Loss,
+    "SmoothL1Loss":SmoothL1Loss,
+    "MPJPELoss": MPJPELoss,
+    "MSELoss":MSELoss,
+    "WingLoss":WingLoss,
 }
 
 def build_loss(cfg):

@@ -2,6 +2,7 @@ import os
 import cv2
 import json
 import numpy as np
+from torch import _weight_norm
 import torch.utils.data as data
 from data_process.data_pre_process import Affine
 from data_process.data_pre_process import ToTensor
@@ -10,7 +11,6 @@ from data_process.data_pre_process import NormalizeTensor
 from data_process.data_pre_process import HalfBodyTransform
 from data_process.data_pre_process import PhotometricDistortion
 from data_process.data_pre_process import GetRandomScaleRotation
-from data_process.heatmaps.build_heatmap_generator import build_heatmaps
 
 
 class CocoDataRegression(data.Dataset):
@@ -165,13 +165,14 @@ class CocoDataRegression(data.Dataset):
 
         if self.is_train:
             target = np.zeros((1, self.num_joints * 2), dtype=np.float32)
-            target_weight = np.zeros((self.num_joints, 1), dtype=np.float32)
+            target_weight = np.zeros((self.num_joints * 2, 1), dtype=np.float32)
 
             for i in range(self.num_joints):
-                target_weight[i] = joints[i, -1]
-                if target_weight[i] < 1:
+                weight = joints[i, -1]
+                if weight < 1:
                     continue
-                target_weight[i] = 1
+                target_weight[i * 2] = 1
+                target_weight[i * 2 + 1] = 1
                 target[0, i * 2 + 0] = joints[i, 0] / self.image_size[0]
                 target[0, i * 2 + 1] = joints[i, 1] / self.image_size[1]
         else:

@@ -1,6 +1,5 @@
 from easydict import EasyDict as edict
 
-
 backbone_cfg=edict()
 backbone_cfg.name="MobileNetV2"
 backbone_cfg.widen_factor=1.0
@@ -9,12 +8,10 @@ backbone_cfg.in_channels=3
 backbone_cfg.out_indices=-1
 backbone_cfg.frozen_stages=None
 
-
-
 ###############################################################################################
 head_cfg = edict()
 head_cfg.name = "TopdownHeatmapSimpleHead"
-head_cfg.in_channels = 2048
+head_cfg.in_channels = 1280
 head_cfg.out_channels = 17
 head_cfg.num_deconv_layers = 3
 head_cfg.num_deconv_filters=(256, 256, 256)
@@ -25,13 +22,12 @@ head_cfg.conv_layer_kernel=None
 head_cfg.in_index=0
 head_cfg.input_transform=None
 head_cfg.align_corners=False
-
+#########################################################################
 loss_cfg = edict()
 loss_cfg.name = "JointsMSELoss"
 loss_cfg.use_target_weight = True
 loss_cfg.loss_weight = 1.
 head_cfg.loss = loss_cfg
-
 ##################################################################################################
 data_train_cfg = edict()
 data_train_cfg.name = "CocoDataWithMutex"
