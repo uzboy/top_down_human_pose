@@ -56,7 +56,11 @@ class CocoDataRegression(data.Dataset):
             self.pix_aug = PhotometricDistortion(cfg.brightness_delta,
                                                                                          cfg.contrast_range,
                                                                                          cfg.saturation_range,
-                                                                                         cfg.hue_delta)
+                                                                                         cfg.hue_delta,
+                                                                                         cfg.brightness_prob,
+                                                                                         cfg.contrast_prob,
+                                                                                         cfg.saturation_prob,
+                                                                                         cfg.hue_prob)
     
         self.img_affine = Affine()
         self.to_tensor = ToTensor()
@@ -164,8 +168,8 @@ class CocoDataRegression(data.Dataset):
         image = self.norm_image(image)
 
         if self.is_train:
-            target = np.zeros((1, self.num_joints * 2), dtype=np.float32)
-            target_weight = np.zeros((self.num_joints * 2, 1), dtype=np.float32)
+            target = np.zeros((self.num_joints * 2), dtype=np.float32)
+            target_weight = np.zeros((self.num_joints * 2), dtype=np.float32)
 
             for i in range(self.num_joints):
                 weight = joints[i, -1]
@@ -173,13 +177,13 @@ class CocoDataRegression(data.Dataset):
                     continue
                 target_weight[i * 2] = 1
                 target_weight[i * 2 + 1] = 1
-                target[0, i * 2 + 0] = joints[i, 0] / self.image_size[0]
-                target[0, i * 2 + 1] = joints[i, 1] / self.image_size[1]
+                target[i * 2 + 0] = joints[i, 0] / self.image_size[0]
+                target[i * 2 + 1] = joints[i, 1] / self.image_size[1]
         else:
-            targets = None
-            target_weights = None
+            target = None
+            target_weight = None
 
-        return image, targets, target_weights
+        return image, target, target_weight
 
     def __len__(self):
         return len(self.anno)

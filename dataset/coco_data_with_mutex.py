@@ -62,7 +62,11 @@ class CocoDataWithMutex(data.Dataset):
             self.pix_aug = PhotometricDistortion(cfg.brightness_delta,
                                                                                          cfg.contrast_range,
                                                                                          cfg.saturation_range,
-                                                                                         cfg.hue_delta)
+                                                                                         cfg.hue_delta,
+                                                                                         cfg.brightness_prob,
+                                                                                         cfg.contrast_prob,
+                                                                                         cfg.saturation_prob,
+                                                                                         cfg.hue_prob)
     
         self.img_affine = Affine()
         self.to_tensor = ToTensor()

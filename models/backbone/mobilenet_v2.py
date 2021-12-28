@@ -48,6 +48,19 @@ class MobileNetV2(NetBase):
             out_channels = make_divisible(channel * cfg.widen_factor, 8)
             self.make_layer(out_channels=out_channels, num_blocks=num_blocks, stride=stride, expand_ratio=expand_ratio)
 
+        if cfg.widen_factor > 1.0:
+            self.out_channel = int(1280 * cfg.widen_factor)
+        else:
+            self.out_channel = 1280
+        self.layers.append(nn.Sequential(nn.Conv2d(in_channels=self.in_channels,
+                                                                                                      out_channels=self.out_channel,
+                                                                                                      kernel_size=1,
+                                                                                                      stride=1,
+                                                                                                      padding=0,
+                                                                                                      bias=False),
+                                                                                nn.BatchNorm2d(self.out_channel),
+                                                                                nn.ReLU6(inplace=True)))
+
         if isinstance(cfg.out_indices, int):
             self.out_indices = [cfg.out_indices]
         self.out_indices = [index if index > -1 else len(self.layers) - 1 for index in self.out_indices]

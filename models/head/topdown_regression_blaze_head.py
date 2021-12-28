@@ -31,15 +31,16 @@ class TopdownRegressionBlazeHead(NetBase):
                                                                                                 bias=False),
                                                                         nn.BatchNorm2d(288),
                                                                         nn.ReLU6(inplace=True))
-
+        self.in_channels = 288
         self.layers = nn.ModuleList()
         for _, layer_cfg in enumerate(self.arch_settings):
             expand_ratio, channel, num_blocks, stride = layer_cfg
             out_channels = channel
             self.make_layer(out_channels=out_channels, num_blocks=num_blocks, stride=stride, expand_ratio=expand_ratio)
 
+        self.layers = nn.Sequential(*self.layers)
         self.final_layer = nn.Sequential(nn.Conv2d(in_channels=self.in_channels,
-                                                                                                 out_channels=cfg.num_points * 2,
+                                                                                                 out_channels=cfg.out_channels,
                                                                                                  kernel_size=2,
                                                                                                  stride=1,
                                                                                                  padding=0,
@@ -63,13 +64,7 @@ class TopdownRegressionBlazeHead(NetBase):
             self.in_channels = out_channels
 
     def init_weight(self):
-        for _, m in self.deconv_layers.named_modules():
-            if isinstance(m, nn.ConvTranspose2d):
-                normal_init(m, std=0.001)
-            elif isinstance(m, nn.BatchNorm2d):
-                constant_init(m, 1)
-    
-        for m in self.final_layer.modules():
+        for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 normal_init(m, std=0.001, bias=0)
             elif isinstance(m, nn.BatchNorm2d):

@@ -24,11 +24,16 @@ class NormalizeTensor:
 
 class PhotometricDistortion:
 
-    def __init__(self, brightness_delta=32, contrast_range=(0.5, 1.5), saturation_range=(0.5, 1.5), hue_delta=18):
+    def __init__(self, brightness_delta=32, contrast_range=(0.5, 1.5), saturation_range=(0.5, 1.5), hue_delta=18,
+                                        brightness_prob=0.1, contrast_porb=0.1, saturation_prob=0.1, hue_prob=0.1):
         self.brightness_delta = brightness_delta
         self.contrast_lower, self.contrast_upper = contrast_range
         self.saturation_lower, self.saturation_upper = saturation_range
         self.hue_delta = hue_delta
+        self.brightness_prob=brightness_prob
+        self.contrast_porb=contrast_porb
+        self.saturation_prob=saturation_prob
+        self.hue_prob=hue_prob
 
     def convert(self, img, alpha=1, beta=0):
         img = img.astype(np.float32) * alpha + beta
@@ -36,21 +41,23 @@ class PhotometricDistortion:
         return img.astype(np.uint8)
 
     def brightness(self, img):
-        if random.randint(2):
+        if random.rand() < self.brightness_prob:
             return self.convert(img, beta=random.uniform(-self.brightness_delta, self.brightness_delta))
         return img
 
     def contrast(self, img):
-        if random.randint(2):
+        if random.rand() < self.contrast_porb:
             return self.convert(img, alpha=random.uniform(self.contrast_lower, self.contrast_upper))
         return img
 
     def saturation(self, img):
-        img[:, :, 1] = self.convert(img[:, :, 1], alpha=random.uniform(self.saturation_lower, self.saturation_upper))
+        if random.rand() < self.saturation_prob:
+            img[:, :, 1] = self.convert(img[:, :, 1], alpha=random.uniform(self.saturation_lower, self.saturation_upper))
         return img
 
     def hue(self, img):
-        img[:, :, 0] = (img[:, :, 0].astype(int) + random.randint(-self.hue_delta, self.hue_delta)) % 180
+        if random.rand() < self.hue_prob:
+            img[:, :, 0] = (img[:, :, 0].astype(int) + random.randint(-self.hue_delta, self.hue_delta)) % 180
         return img
 
     def swap_channels(self, img):
@@ -65,20 +72,15 @@ class PhotometricDistortion:
         if mode == 1:
             img = self.contrast(img)
 
-        hsv_mode = random.randint(4)
-        if hsv_mode:
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-            if hsv_mode == 1 or hsv_mode == 3:
-                img = self.saturation(img)
-            if hsv_mode == 2 or hsv_mode == 3:
-                img = self.hue(img)
-            image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        img = self.saturation(img)
+        img = self.hue(img)
+        image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
 
         if mode == 0:
             img = self.contrast(img)
 
-        self.swap_channels(img)
-
+        # self.swap_channels(img)
         return image
 
 

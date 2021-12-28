@@ -1,7 +1,6 @@
 import os
 import argparse
 from utils.utils import get_logger
-from utils.utils import save_checkpoint
 from torch.utils.data import DataLoader
 from config.build_config import build_config
 from dataset.build_dataset import build_dataset
@@ -41,4 +40,5 @@ if __name__ == "__main__":
         if train_dataset is not None:
             epoch_trainer(ep)
             if ep % cfg.save_ckps_freq == 0:
-                save_checkpoint(model, os.path.join(cfg.mode_root, cfg.model_pth_name))
+                model.save_ckps(ep)
+    model.save_ckps(cfg.end_epoch)

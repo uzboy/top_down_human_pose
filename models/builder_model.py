@@ -35,9 +35,9 @@ class Model(nn.Module):
             save_file_name = os.path.join(self.save_backbone_base, self.save_backbone_prev + "_%d.pth" % (epoch_index + 1))
             save_checkpoint(self.backbone, save_file_name)
 
-        if self.save_backbone_base is not None and self.save_backbone_prev is not None:
-            save_file_name = os.path.join(self.save_backbone_base, self.save_backbone_prev + "_%d.pth" % (epoch_index + 1))
-            save_checkpoint(self.backbone, save_file_name)
+        if self.save_head_base is not None and self.save_head_prev is not None:
+            save_file_name = os.path.join(self.save_head_base, self.save_head_prev + "_%d.pth" % (epoch_index + 1))
+            save_checkpoint(self.head, save_file_name)
 
     def get_loss(self, loss_inputs):
         return self.head.get_loss(loss_inputs)

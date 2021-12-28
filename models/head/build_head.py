@@ -3,12 +3,16 @@ from utils.utils import load_checkpoint
 from models.head.topdown_heatmap_msmu_head import TopdownHeatmapMSMUHead
 from models.head.topdown_heatmap_simple_head import TopdownHeatmapSimpleHead
 from models.head.topdown_heatmap_ms_head import TopdownHeatmapMultiStageHead
+from models.head.topdown_regression_blaze_head import TopdownRegressionBlazeHead
+from models.head.topdown_regression_simple_head import TopdownRegressionSimpleHead
 
 
 HEADS = {
     "TopdownHeatmapMSMUHead": TopdownHeatmapMSMUHead,
     "TopdownHeatmapSimpleHead": TopdownHeatmapSimpleHead,
-    "TopdownHeatmapMultiStageHead": TopdownHeatmapMultiStageHead
+    "TopdownHeatmapMultiStageHead": TopdownHeatmapMultiStageHead,
+    "TopdownRegressionBlazeHead":TopdownRegressionBlazeHead,
+    "TopdownRegressionSimpleHead":TopdownRegressionSimpleHead,
 }
 
 
