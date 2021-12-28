@@ -1,18 +1,25 @@
 from easydict import EasyDict as edict
 
-
-backbone_cfg = edict()
-backbone_cfg.name = "ResNeXt"
+backbone_cfg=edict()
+backbone_cfg.name="ResNet"
+backbone_cfg.resum_path=None
 backbone_cfg.in_channels=3
 backbone_cfg.stem_channels=64
 backbone_cfg.base_channels=64
-backbone_cfg.groups=32
-backbone_cfg.width_per_group=4
-backbone_cfg.stage_blocks=[3, 4, 6, 3]
-backbone_cfg.strides=(1, 2, 2, 2)
-backbone_cfg.out_indices=(3, )
+backbone_cfg.out_indices=-1
 backbone_cfg.deep_stem=False
 backbone_cfg.avg_down=False
+backbone_cfg.frozen_stages=None
+
+backbone_cfg.stage_settings = [
+    # block_name     num_blocks      stride        group       width_per_group     base_channels     with_se     se_ratio
+    ["Bottleneck",          3,                          1,                  1,                      -1,                                 -1,                             True,              16],
+    ["Bottleneck",          4,                          2,                  1,                      -1,                                 -1,                             True,              16],
+    ["Bottleneck",          6,                          2,                  1,                      -1,                                 -1,                             True,              16],
+    ["Bottleneck",          3,                          2,                  1,                      -1,                                 -1,                             True,              16],
+]
+
+
 ###############################################################################################
 head_cfg = edict()
 head_cfg.name = "TopdownHeatmapSimpleHead"

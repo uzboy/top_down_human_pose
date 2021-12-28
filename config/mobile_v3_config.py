@@ -1,19 +1,15 @@
 from easydict import EasyDict as edict
 
 
-backbone_cfg = edict()
-backbone_cfg.name = "ResNeXt_SE"
+backbone_cfg=edict()
+backbone_cfg.name="MobileNetV3"
+backbone_cfg.arch="small"
+backbone_cfg.resum_path=None
 backbone_cfg.in_channels=3
-backbone_cfg.stem_channels=64
-backbone_cfg.base_channels=64
-backbone_cfg.groups=32
-backbone_cfg.width_per_group=4
-backbone_cfg.stage_blocks=[3, 4, 6, 3]
-backbone_cfg.strides=(1, 2, 2, 2)
-backbone_cfg.out_indices=(3, )
-backbone_cfg.deep_stem=False
-backbone_cfg.avg_down=False
-backbone_cfg.se_ratio=16
+backbone_cfg.stem_channels=16
+backbone_cfg.out_indices=-1
+backbone_cfg.frozen_stages=None
+
 
 ###############################################################################################
 head_cfg = edict()

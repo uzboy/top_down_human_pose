@@ -1,16 +1,23 @@
 from easydict import EasyDict as edict
 
-backbone_cfg = edict()
-backbone_cfg.name = "ResNet_SE"
+
+backbone_cfg=edict()
+backbone_cfg.name="ResNet"
+backbone_cfg.resum_path=None
 backbone_cfg.in_channels=3
 backbone_cfg.stem_channels=64
 backbone_cfg.base_channels=64
-backbone_cfg.stage_blocks=[3, 4, 6, 3]
-backbone_cfg.strides=(1, 2, 2, 2)
-backbone_cfg.out_indices=(3, )
+backbone_cfg.out_indices=-1
 backbone_cfg.deep_stem=False
 backbone_cfg.avg_down=False
-backbone_cfg.se_ratio=16
+backbone_cfg.frozen_stages=None
+backbone_cfg.stage_settings = [
+    # block_name     num_blocks      stride        group       width_per_group     base_channels     with_se     se_ratio
+    ["Bottleneck",          3,                          1,                  1,                      -1,                                 -1,                             False,              -1],
+    ["Bottleneck",          4,                          2,                  1,                      -1,                                 -1,                             False,              -1],
+    ["Bottleneck",          6,                          2,                  1,                      -1,                                 -1,                             False,              -1],
+    ["Bottleneck",          3,                          2,                  1,                      -1,                                 -1,                             False,              -1],
+]
 
 
 ###############################################################################################

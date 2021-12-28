@@ -3,6 +3,9 @@ from abc import abstractmethod
 
 
 class NetBase(nn.Module):
+
+    MAX_LAYERS = 10000
+
     def __init__(self):
         super(NetBase, self).__init__()
 
@@ -10,6 +13,7 @@ class NetBase(nn.Module):
     def forward(self, x):
         ""
 
+    @abstractmethod
     def freeze_model(self):
         for param in self.parameters():
             param.requires_grad = False
