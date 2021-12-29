@@ -4,6 +4,15 @@ import logging
 from datetime import datetime
 
 
+def make_divisible(value, divisor, min_value=None, min_ratio=0.9):
+    if min_value is None:
+        min_value = divisor
+    new_value = max(min_value, int(value + divisor / 2) // divisor * divisor)
+    if new_value < min_ratio * value:
+        new_value += divisor
+    return new_value
+
+
 def get_time():
     return (str(datetime.now())[:-10]).replace(' ', '-').replace(':', '-')
 
