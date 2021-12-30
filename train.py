@@ -40,5 +40,6 @@ if __name__ == "__main__":
         if train_dataset is not None:
             epoch_trainer(ep)
             if ep % cfg.save_ckps_freq == 0:
+                print("\nsave module in epoch: %d\n" % ep)
                 model.save_ckps(ep)
     model.save_ckps(cfg.end_epoch)

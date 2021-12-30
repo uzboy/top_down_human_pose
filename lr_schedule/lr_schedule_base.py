@@ -31,8 +31,8 @@ class LrScheduleBase:
 
     def _do_update_without_warmup(self, epoch_index, iter_index):
         if iter_index == 1:
-            self.base_lr = self.get_lr(epoch_index)
-            self._set_lr(self.base_lr)
+            base_lr = self.get_lr(epoch_index)
+            self._set_lr(base_lr)
     
     def _do_update_with_warmup(self, epoch_index, iter_index):
         cur_iter = epoch_index * self.epoch_size + iter_index
@@ -40,8 +40,8 @@ class LrScheduleBase:
             warmup_lr = self.get_warmup_lr(cur_iter)
             self._set_lr(warmup_lr)
         elif iter_index == 1:
-            self.base_lr = self.get_lr(epoch_index)
-            self._set_lr(self.base_lr)
+            base_lr = self.get_lr(epoch_index)
+            self._set_lr(base_lr)
     
     def update_lr(self, epoch_index, iter_index):
         if self.warmup is None:
