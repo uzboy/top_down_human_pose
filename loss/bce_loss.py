@@ -20,6 +20,7 @@ class JointsBCELoss(nn.Module):
         B, C, _, _ = output.shape
         output = output.reshape(B, C, -1)
         output = F.softmax(output, dim=-1)              # 选择softmax而非sigmoid，主要是保证像素点之间互相存在关联
+        target = target.reshape(B, C, -1)
         loss = F.binary_cross_entropy_with_logits(output, target, reduction='none')
         loss = loss.mean(dim=-1, keepdim=True)
         loss = loss * target_weight
