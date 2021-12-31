@@ -5,6 +5,7 @@ from loss.regression_l1_loss import L1Loss, SmoothL1Loss, MPJPELoss
 from loss.regression_l2_loss import MSELoss
 from loss.regression_wing_loss import WingLoss
 from loss.joint_mse_with_weight import JointsMSEWithWeightLoss
+from loss.bce_loss import JointsBCELoss
 
 
 LOSS = {
@@ -17,6 +18,7 @@ LOSS = {
     "MSELoss":MSELoss,
     "WingLoss":WingLoss,
     "JointsMSEWithWeightLoss":JointsMSEWithWeightLoss,
+    "JointsBCELoss":JointsBCELoss
 }
 
 def build_loss(cfg):
