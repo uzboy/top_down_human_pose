@@ -1,5 +1,6 @@
 from config.mobile_v2_config import config as MobileNetV2
 from config.mobile_v2_blaze_config import config as MobileNetV2Blaze
+from config.mobile_v2_weight_loss_config import config as MobileNetV2WithWeight
 # from config.mobile_v3_config import config as MobileNetV3
 # from config.resnet_50_config import config as ResNet50
 # from config.resnet_50_se_config import config as ResNetSe50
@@ -17,6 +18,7 @@ from config.mobile_v2_blaze_config import config as MobileNetV2Blaze
 CONFIGS = {
     "MobileNetV2":MobileNetV2,
     "MobileNetV2Blaze":MobileNetV2Blaze,
+    "MobileNetV2WithWeight":MobileNetV2WithWeight
     # "MobileNetV3":MobileNetV3,
     # "ResNet50":ResNet50,
     # "ResNetSe50":ResNetSe50,

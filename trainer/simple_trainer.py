@@ -53,4 +53,3 @@ class SimpleTrainer(TrainBase):
                             str_infos += "\t"
     
                     self.logger.info(str_infos)
-

@@ -12,7 +12,7 @@ from lr_schedule.build_lr_schedule import build_lr_schedule
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Train a pose model')
-    parser.add_argument('--config', default="MobileNetV2", type=str, help='train config file path')
+    parser.add_argument('--config', default="MobileNetV2Blaze", type=str, help='train config file path')
     args = parser.parse_args()
     cfg = build_config(args.config)
 

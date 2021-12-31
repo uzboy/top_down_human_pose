@@ -17,14 +17,11 @@ class JointsMSEWithWeightLoss(nn.Module):
             self.loss_weight = 1.
 
     def _compute_loss(self, pred, target):
-        pos_value = (target != 0).sum().float()
-        neg_value = (target == 0).sum().float()
-        pos_weight = 1 - pos_value / (pos_value + neg_value)
-
-        pos_weight = (pos_value + neg_value) / (pos_value + 1e-6)
-        neg_weight = (pos_value + neg_value) / (neg_value + 1e-6)
+        pos_value = (target != 0).sum(dim=1).float()
+        pos_weight = 1 - pos_value / target.shape[-1]
+        pos_weight = pos_weight[:, None].expand_as(target)
         loss_weight = torch.ones_like(target)
-        loss_weight = torch.where(target != 0, loss_weight * pos_weight, loss_weight * neg_weight)
+        loss_weight = torch.where(target != 0, loss_weight * pos_weight, loss_weight * (1 - pos_weight))
         loss = (pred - target) ** 2 * loss_weight
         return loss.mean()
 
@@ -46,10 +43,3 @@ class JointsMSEWithWeightLoss(nn.Module):
                 loss += self._compute_loss(heatmap_pred, heatmap_gt)
 
         return loss / num_joints * self.loss_weight
-
-
-if __name__ == "__main__":
-    loss = JointsMSEWithWeightLoss(None)
-    output = torch.rand([32, 17, 128, 128])
-    target = torch.rand([32, 17, 128, 128])
-    loss(output, target, None)

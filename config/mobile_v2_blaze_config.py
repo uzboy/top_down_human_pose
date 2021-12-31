@@ -3,7 +3,7 @@ from easydict import EasyDict as edict
 backbone_cfg=edict()
 backbone_cfg.name="MobileNetV2"
 backbone_cfg.widen_factor=1.0
-backbone_cfg.resum_path="pth/mobilenet_v2_251.pth"
+backbone_cfg.resum_path="pth/mobilenet_v2_211.pth"
 backbone_cfg.in_channels=3
 backbone_cfg.out_indices=-1
 backbone_cfg.frozen_stages="all"
@@ -33,7 +33,7 @@ data_train_cfg.image_size = [256, 256]          # 192
 data_train_cfg.num_joints = 17
 data_train_cfg.mean=[0.485, 0.456, 0.406]
 data_train_cfg.std=[0.229, 0.224, 0.225]
-data_train_cfg.batch_size = 16
+data_train_cfg.batch_size = 64
 data_train_cfg.pin_memory = False
 data_train_cfg.num_workers = 4
 
@@ -64,17 +64,17 @@ data_train_cfg.hue_prob = 0.2
 ##################################################################################################
 optimizer_cfg = edict()
 optimizer_cfg.name = "Adam"
-optimizer_cfg.base_lr = 2e-3
+optimizer_cfg.base_lr = 5e-4
 optimizer_cfg.weight_decay = 0
 optimizer_cfg.beta1 = 0.9
 optimizer_cfg.beta2 = 0.999
 ########################################################################################
 lr_schedule_cfg = edict()
 lr_schedule_cfg.name = "LrScheduleStep"
-lr_schedule_cfg.step = [170, 200]
-lr_schedule_cfg.gamma = 0.1
+lr_schedule_cfg.step = [40, 80, 120, 150]
+lr_schedule_cfg.gamma = 0.2
 lr_schedule_cfg.min_lr = None
-lr_schedule_cfg.warmup = "linear"
+lr_schedule_cfg.warmup = None #"linear"
 lr_schedule_cfg.warmup_iters = 500
 lr_schedule_cfg.warmup_ratio = 0.001
 ########################################################
@@ -83,8 +83,8 @@ model_cfg.backbone = backbone_cfg
 model_cfg.head = head_cfg
 model_cfg.resum_path = ""
 model_cfg.us_multi_gpus = False
-model_cfg.gup_ids = [0, 1]
-model_cfg.device = "cuda:0"
+model_cfg.gup_ids = [2, 3]
+model_cfg.device = "cuda:2"
 
 data_cfg = edict()
 data_cfg.train = data_train_cfg
@@ -96,10 +96,10 @@ config.optimizer = optimizer_cfg
 config.lr_schedule = lr_schedule_cfg
 
 config.logfile = "./logger/mobilenet_v2_blaze_net.txt"
-config.logger_freq=10
+config.logger_freq=50
 config.mode_root = "./pth"
 config.device = config.model.device
 config.start_epoch = 0
-config.end_epoch = 250
+config.end_epoch = 170
 config.eval_freq = 10
 config.save_ckps_freq = 5
