@@ -20,8 +20,7 @@ class JointsMSEWithWeightLoss(nn.Module):
         pos_value = (target != 0).sum(dim=1).float()
         pos_weight = 1 - pos_value / target.shape[-1]
         pos_weight = pos_weight[:, None].expand_as(target)
-        loss_weight = torch.ones_like(target)
-        loss_weight = torch.where(target != 0, loss_weight * pos_weight, loss_weight * (1 - pos_weight))
+        loss_weight = torch.where(target != 0, pos_weight, 1 - pos_weight)
         loss = (pred - target) ** 2 * loss_weight
         return loss.mean()
 
