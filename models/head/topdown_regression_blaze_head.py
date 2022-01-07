@@ -73,10 +73,9 @@ class TopdownRegressionBlazeHead(NetBase):
                                                                                                kernel_size=2,
                                                                                                stride=1,
                                                                                                padding=0))
-        try:
-            if cfg.loc_loss is not None:
-                self.loc_loss = build_loss(cfg.loc_loss)
-        except:
+        if hasattr(cfg, "loc_loss") and cfg.loc_loss is not None:
+            self.loc_loss = build_loss(cfg.loc_loss)
+        else:
             self.loc_loss = None
 
         if self.with_mask_layers:
@@ -86,10 +85,9 @@ class TopdownRegressionBlazeHead(NetBase):
                                                                                                         stride=1,
                                                                                                         padding=0),
                                                                                  nn.Sigmoid())
-            try:
-                if cfg.mask_loss is not None:
-                    self.mask_loss = build_loss(cfg.mask_loss)
-            except:
+            if hasattr(cfg, "mask_loss") and cfg.mask_loss is not None:
+                self.mask_loss = build_loss(cfg.mask_loss)
+            else:
                 self.mask_loss = None
 
     def make_layer(self, in_channels, out_channels, num_blocks, stride):

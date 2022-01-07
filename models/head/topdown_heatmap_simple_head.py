@@ -44,20 +44,16 @@ class TopdownHeatmapSimpleHead(NetBase):
                 conv_channels = cfg.conv_layers_out[i]
 
         layers.append(nn.Conv2d(in_channels=conv_channels, out_channels=cfg.out_channels, kernel_size=1, stride=1, padding=0))
-        try:
-            if cfg.use_sigmoid:
-                layers.append(nn.Sigmoid())
-        except:
-            pass
+        if hasattr(cfg, "use_sigmoid") and cfg.use_sigmoid:
+            layers.append(nn.Sigmoid())
 
         self.final_layer = nn.Sequential(*layers)
 
-        self.loss = None
-        try:
-            if cfg.loss is not None:
-                self.loss = build_loss(cfg.loss)
-        except:
-            pass
+        
+        if hasattr(cfg, "loss") and cfg.loss is not None:
+            self.loss = build_loss(cfg.loss)
+        else:
+            self.loss = None
 
     def init_weight(self):
         for _, m in self.deconv_layers.named_modules():

@@ -6,14 +6,14 @@ class JointsBCELoss(nn.Module):
 
     def __init__(self, cfg):
         super().__init__()
-        try:
+        if hasattr(cfg, "use_target_weight"):
             self.use_target_weight = cfg.use_target_weight
-        except:
+        else:
             self.use_target_weight = False
 
-        try:
+        if hasattr(cfg, "loss_weight"):
             self.loss_weight = cfg.loss_weight
-        except:
+        else:
             self.loss_weight = 1.
 
     def forward(self, output, target, target_weight):
@@ -31,14 +31,14 @@ class VisMaskBCELoss(nn.Module):
 
     def __init__(self, cfg):
         super().__init__()
-        try:
+        if hasattr(cfg, "use_target_weight"):
             self.use_target_weight = cfg.use_target_weight
-        except:
+        else:
             self.use_target_weight = False
 
-        try:
+        if hasattr(cfg, "loss_weight"):
             self.loss_weight = cfg.loss_weight
-        except:
+        else:
             self.loss_weight = 1.
 
     def forward(self, output, target, target_weight):

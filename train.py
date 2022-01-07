@@ -1,4 +1,3 @@
-import os
 import argparse
 from utils.utils import get_logger
 from torch.utils.data import DataLoader
@@ -29,17 +28,9 @@ if __name__ == "__main__":
 
     optimizer = build_optimizer(cfg.optimizer, model)
     lr_schedule = build_lr_schedule(cfg.lr_schedule, optimizer, len(train_dataset))
-
-    if not hasattr(cfg, "loss_num"):
-        loss_num = 0
-    else:
-        loss_num = cfg.loss_num
-    epoch_trainer = Trainer(model, train_data_loader, optimizer, cfg.device, lr_schedule, logger, cfg.logger_freq, loss_num)
+    epoch_trainer = Trainer(model, train_data_loader, optimizer, cfg.device, lr_schedule, logger, cfg.logger_freq)
 
     for ep in range(cfg.start_epoch, cfg.end_epoch):
         if train_dataset is not None:
-            epoch_trainer(ep)
-            if ep % cfg.save_ckps_freq == 0:
-                print("\nsave module in epoch: %d\n" % ep)
-                model.save_ckps(ep)
-    model.save_ckps(cfg.end_epoch)
+            is_save_ckps = ((ep % cfg.save_ckps_freq == 0) or (ep == cfg.end_epoch - 1))
+            epoch_trainer(ep, is_save_ckps)

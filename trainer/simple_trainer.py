@@ -6,15 +6,12 @@ from trainer.base import TrainBase
 
 class SimpleTrainer(TrainBase):
 
-    def __init__(self, model, data_loader, optimizer, device, lr_schedule, logger, logger_freq, loss_nums = 1):
+    def __init__(self, model, data_loader, optimizer, device, lr_schedule, logger, logger_freq):
         super().__init__(model, data_loader, optimizer,  device, lr_schedule, logger, logger_freq)
-        self.loss_nums = loss_nums + 1
 
-    def train_one_epoch(self, epoch_index):
+    def train_one_epoch(self, epoch_index, save_ckps):
         self.model.train()
         loss_avgs = []
-        for _ in range(self.loss_nums):
-            loss_avgs.append(AverageMeter())
         batch = 0
         for images, targets, target_weights in tqdm(iter(self.data_loader)):
                 batch += 1
@@ -25,11 +22,8 @@ class SimpleTrainer(TrainBase):
 
                 outputs = self.model(images)
                 loss_inputs = outputs, targets, target_weights
-                if hasattr(self.model, "module"):
-                    loss = self.model.module.get_loss(loss_inputs)
-                else:
-                    loss = self.model.get_loss(loss_inputs)
-        
+                loss = self.get_loss(loss_inputs)
+
                 if not isinstance(loss, list):
                     loss = [loss]
 
@@ -38,6 +32,9 @@ class SimpleTrainer(TrainBase):
                 self.optimizer.step()
         
                 for index in range(self.loss_nums):
+                    if len(loss_avgs) < (index + 1):
+                        loss_avgs.append(AverageMeter())
+
                     loss_avgs[index].update(loss[index].data.item(), images.size(0))
 
                 if batch % self.logger_freq == 0:
@@ -53,3 +50,6 @@ class SimpleTrainer(TrainBase):
                             str_infos += "\t"
     
                     self.logger.info(str_infos)
+
+        if save_ckps:
+            self.save_ckps(epoch_index)

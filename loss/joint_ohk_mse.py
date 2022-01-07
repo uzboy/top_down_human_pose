@@ -7,19 +7,19 @@ class JointsOHKMMSELoss(nn.Module):
     def __init__(self, cfg):
         super().__init__()
         self.criterion = nn.MSELoss(reduction='none')
-        try:
+        if hasattr(cfg, "use_target_weight"):
             self.use_target_weight = cfg.use_target_weight
-        except:
+        else:
             self.use_target_weight = False
 
-        try:
+        if hasattr(cfg, "topk"):
             self.topk = cfg.topk
-        except:
+        else:
             self.topk = 8
 
-        try:
+        if hasattr(cfg, "loss_weight"):
             self.loss_weight = cfg.loss_weight
-        except:
+        else:
             self.loss_weight = 1.0
 
     def _ohkm(self, loss):

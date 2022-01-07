@@ -22,19 +22,21 @@ class CocoDataRegression(data.Dataset):
         self.image_root = cfg.image_root
         self.load_annotions(cfg.annotion_file)
 
-        try:
+        if hasattr(cfg, "is_rot"):
             self.is_rot = cfg.is_rot
-        except:
+        else:
             self.is_rot = False
+    
         if self.is_rot:
             self.rotation = Rotation(cfg.rot_factor, cfg.rot_prob)
 
         self.expan_border = ExpanBorder(cfg.expan_factor, cfg.expan_prob, cfg.min_expan_factor)
     
-        try:
+        if hasattr(cfg, "is_pic"):
             self.is_pic = cfg.is_pic
-        except:
+        else:
             self.is_pic = False
+    
         if self.is_pic:
             self.pix_aug = PhotometricDistortion(cfg.brightness_delta,
                                                                                          cfg.contrast_range,

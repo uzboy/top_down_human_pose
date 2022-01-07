@@ -12,19 +12,19 @@ class Model(nn.Module):
         self.backbone = build_backbone(cfg.backbone)
         self.head = build_head(cfg.head)
 
-        try:
+        if hasattr(cfg.backbone, "pre_name") and hasattr(cfg, "base_path"):
             self.save_backbone_prev = cfg.backbone.pre_name
             self.save_backbone_base = cfg.backbone.base_path
-        except:
+        else:
             self.save_backbone_base = None
             self.save_backbone_prev = None
         if self.save_backbone_base is not None and not os.path.exists(self.save_backbone_base):
             os.makedirs(self.save_backbone_base)
 
-        try:
+        if hasattr(cfg.head, "pre_name") and hasattr(cfg.head, "base_path"):
             self.save_head_prev = cfg.head.pre_name
             self.save_head_base = cfg.head.base_path
-        except:
+        else:
             self.save_head_base = None
             self.save_head_prev = None
         if self.save_head_base is not None and not os.path.exists(self.save_head_base):

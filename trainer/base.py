@@ -13,8 +13,21 @@ class TrainBase:
         self.logger_freq = logger_freq
 
     @abstractmethod
-    def train_one_epoch(self, epoch_index):
+    def train_one_epoch(self, epoch_index, save_ckps):
         ""
 
-    def __call__(self, epoch_index):
-        self.train_one_epoch(epoch_index)
+    def get_loss(self, loss_inputs):
+        if hasattr(self.model, "module"):
+            loss = self.model.module.get_loss(loss_inputs)
+        else:
+            loss = self.model.get_loss(loss_inputs)
+        return loss
+
+    def save_ckps(self, epoch_index):
+        if hasattr(self.model, "module"):
+            self.model.module.save_ckps(epoch_index)
+        else:
+            self.model.save_ckps(epoch_index)
+
+    def __call__(self, epoch_index, save_ckps):
+        self.train_one_epoch(epoch_index, save_ckps)

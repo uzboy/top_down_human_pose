@@ -28,16 +28,16 @@ class CocoDataWithMutex(data.Dataset):
         if self.is_train:
             self.target_generators = build_heatmaps(cfg.heatmaps)
 
-        try:
+        if hasattr(cfg, "is_flip"):
             self.is_flip = cfg.is_flip
-        except:
+        else:
             self.is_flip = False
         if self.is_flip:
             self.random_flip = RandomFlip(cfg.flip_prob, cfg.flip_pairs)
     
-        try:
+        if hasattr(cfg, "is_half_body"):
             self.is_half_body = cfg.is_half_body
-        except:
+        else:
             self.is_half_body = False
         if self.is_half_body:
             self.half_body = HalfBodyTransform(cfg.image_size,
@@ -47,17 +47,18 @@ class CocoDataWithMutex(data.Dataset):
                                                                                         cfg.upper_body_index,
                                                                                         cfg.lower_body_index)
         
-        try:
+        if hasattr(cfg, "is_rot"):
             self.is_rot = cfg.is_rot
-        except:
+        else:
             self.is_rot = False
         if self.is_rot:
             self.scale_rotation = GetRandomScaleRotation(cfg.rot_factor, cfg.scale_factor, cfg.rot_prob)
 
-        try:
+        if hasattr(cfg, "is_pic"):
             self.is_pic = cfg.is_pic
-        except:
+        else:
             self.is_pic = False
+    
         if self.is_pic:
             self.pix_aug = PhotometricDistortion(cfg.brightness_delta,
                                                                                          cfg.contrast_range,

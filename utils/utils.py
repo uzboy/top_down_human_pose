@@ -22,9 +22,9 @@ def load_checkpoint(mode, mode_path):
 
 
 def save_checkpoint(model, model_path):
-    try:
+    if hasattr(model, "module"):
         torch.save(model.module.state_dict(), model_path)
-    except:
+    else:
         torch.save(model.state_dict(), model_path)
 
 
