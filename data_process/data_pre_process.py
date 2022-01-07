@@ -257,3 +257,142 @@ class TopDownRandomTranslation:
         if np.random.rand() <= self.trans_prob:
             center += self.trans_factor * np.random.uniform(-1, 1, size=2) * scale * 200
         return center
+
+
+
+class Rotation:
+
+    def __init__(self, rot_factor=40, rot_prob=0.6):
+        self.rot_factor = rot_factor
+        self.rot_prob = rot_prob
+    
+    def __call__(self, image, points):
+        if np.random.rand() > self.rot_prob:
+            return image, points
+
+        r_factor = (np.random.rand() - 0.5) * 2 * self.rot_factor
+        (h, w) = image.shape[:2]
+        (cX, cY) = (w // 2, h // 2)
+        M = cv2.getRotationMatrix2D((cX, cY), r_factor, 1.0)
+        cos = np.abs(M[0, 0])
+        sin = np.abs(M[0, 1])
+        nW = int((h * sin) + (w * cos))
+        nH = int((h * cos) + (w * sin))
+        M[0, 2] += (nW / 2) - cX
+        M[1, 2] += (nH / 2) - cY
+        image = cv2.warpAffine(image, M, (nW, nH), borderValue=(255, 255, 255))
+        points[:, 0] -= cX
+        points[:, 1] -= cY
+        joints_copy = points.copy()
+        for index in range(len(points)):
+            if points[index, 2] == 0:
+                continue
+            points[index, 0] = M[0, 0] * joints_copy[index, 0] + M[0, 1] * joints_copy[index, 1] + (nW / 2)
+            points[index, 1] = M[1, 0] * joints_copy[index, 0] + M[1, 1] * joints_copy[index, 1] + (nH / 2)
+
+        x_min = np.min(points[:4, 0])
+        x_max = np.max(points[:4, 0])
+
+        y_min = np.min(points[:4, 1])
+        y_max = np.max(points[:4, 1])
+
+        points[0, :2] = [x_min, y_min]
+        points[1, :2] = [x_min, y_max]
+        points[2, :2] = [x_max, y_max]
+        points[3, :2] = [x_max, y_min]
+
+        return image, points
+
+
+class ExpanBorder:
+
+    def __init__(self, expan_factor=0.5, expan_prob=0.6, min_expan_factor=0.2):
+        self.expan_factor = expan_factor
+        self.expan_prob = expan_prob
+        self.min_expan_factor = min_expan_factor
+
+    def __call__(self, points, image_shape):
+        if np.random.rand() < self.expan_prob:
+            s_factor = np.clip(np.random.rand(2) * self.expan_factor + 1, 1 + self.min_expan_factor, 1 + self.expan_factor)
+        else:
+            s_factor = np.array([1 + self.min_expan_factor, 1 + self.min_expan_factor])
+    
+        left_top = points[0]
+        rght_dwn = points[2]
+
+        w = rght_dwn[0] - left_top[0]
+        h = rght_dwn[1] - left_top[1]
+        center_x = left_top[0] + w / 2
+        center_y = left_top[1] + h / 2
+
+        x_min = max(center_x - w * s_factor[0] / 2, 0)
+        x_max = min(center_x + w * s_factor[0] / 2, image_shape[1])
+
+        y_min = max(center_y - h * s_factor[1] / 2, 0)
+        y_max = min(center_y + h * s_factor[1] / 1, image_shape[0])
+
+        points[0, :2] = [x_min, y_min]
+        points[1, :2] = [x_min, y_max]
+        points[2, :2] = [x_max, y_max]
+        points[3, :2] = [x_max, y_min]
+
+        return points
+
+
+class ShiftCenter:
+
+    def __init__(self, shift_factor=0.2, shift_prob=0.6):
+        self.shift_factor=shift_factor
+        self.shift_prob=shift_prob
+
+    def __call__(self, points, image_shape):
+        if np.random.rand() <self.shift_prob:
+            offset = self.shift_factor * (np.random.rand(2) - 0.5) * 2 * [image_shape[1], image_shape[0]]
+        else:
+            offset = [0, 0]
+        
+        for index in range(4):
+            points[index, :2] += offset
+        
+        points[:4, 0] = np.clip(points[:4, 0], 0, image_shape[1])
+        points[:4, 1] = np.clip(points[:4, 1], 0, image_shape[0])
+
+        return points
+
+
+class GetTargetSampleImage:
+
+    def __init__(self, target_size, is_shift=False):
+        self.target_size = target_size
+        self.ratio = (target_size[0] / target_size[1])
+        self.is_shift = is_shift
+
+    def __call__(self, src_image, points=None):
+        target_image = np.ones((self.target_size[1], self.target_size[0], 3), dtype=src_image.dtype) * 255
+        top_left = points[0].copy()
+        btn_rght = points[2].copy()
+        src_w = btn_rght[0] - top_left[0]
+        src_h = btn_rght[1] - top_left[1]
+
+        if src_w > self.ratio * src_h:
+            dst_w = int(self.target_size[0])
+            dst_h = int(dst_w * src_h / src_w)
+            padding_w = 0
+            padding_h = int(np.random.rand() * (self.target_size[1] - dst_h)) if self.is_shift else int((self.target_size[1] - dst_h) / 2)
+        else:
+            dst_h = int(self.target_size[1])
+            dst_w = int(dst_h * src_w / src_h)
+            padding_w = int(np.random.rand() * (self.target_size[0] - dst_w)) if self.is_shift else int((self.target_size[0] - dst_w) / 2)
+            padding_h = 0
+
+        points[:, 0] -= top_left[0]
+        points[:, 1] -= top_left[1]
+        target_image[padding_h:dst_h + padding_h, padding_w:dst_w + padding_w] = \
+                                                                                            cv2.resize(src_image[int(top_left[1]):int(btn_rght[1]), int(top_left[0]):int(btn_rght[0])], (dst_w, dst_h))
+        if points is not None:
+            points[4:, 0] *= (dst_w / src_w)
+            points[4:, 0] += padding_w
+            points[4:, 1] *= (dst_h / src_h)
+            points[4:, 1] += padding_h
+    
+        return target_image, points
