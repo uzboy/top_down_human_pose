@@ -31,7 +31,7 @@ if __name__ == "__main__":
     lr_schedule = build_lr_schedule(cfg.lr_schedule, optimizer, len(train_dataset))
 
     if not hasattr(cfg, "loss_num"):
-        loss_num = 1
+        loss_num = 0
     else:
         loss_num = cfg.loss_num
     epoch_trainer = Trainer(model, train_data_loader, optimizer, cfg.device, lr_schedule, logger, cfg.logger_freq, loss_num)

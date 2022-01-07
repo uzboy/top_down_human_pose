@@ -8,7 +8,7 @@ class SimpleTrainer(TrainBase):
 
     def __init__(self, model, data_loader, optimizer, device, lr_schedule, logger, logger_freq, loss_nums = 1):
         super().__init__(model, data_loader, optimizer,  device, lr_schedule, logger, logger_freq)
-        self.loss_nums = loss_nums
+        self.loss_nums = loss_nums + 1
 
     def train_one_epoch(self, epoch_index):
         self.model.train()

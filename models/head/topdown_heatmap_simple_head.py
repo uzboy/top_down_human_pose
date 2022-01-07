@@ -30,8 +30,7 @@ class TopdownHeatmapSimpleHead(NetBase):
 
         conv_channels = cfg.num_deconv_filters[-1] if cfg.num_deconv_layers > 0 else self.in_channels
 
-        layers = []
-
+        layers = nn.ModuleList()
         if cfg.num_conv_layers != 0:
             for i in range(cfg.num_conv_layers):
                 layers.append(nn.Conv2d(in_channels=conv_channels,
@@ -45,6 +44,12 @@ class TopdownHeatmapSimpleHead(NetBase):
                 conv_channels = cfg.conv_layers_out[i]
 
         layers.append(nn.Conv2d(in_channels=conv_channels, out_channels=cfg.out_channels, kernel_size=1, stride=1, padding=0))
+        try:
+            if cfg.use_sigmoid:
+                layers.append(nn.Sigmoid())
+        except:
+            pass
+
         self.final_layer = nn.Sequential(*layers)
 
         self.loss = None

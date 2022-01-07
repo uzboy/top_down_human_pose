@@ -43,7 +43,6 @@ class VisMaskBCELoss(nn.Module):
 
     def forward(self, output, target, target_weight):
         loss = F.binary_cross_entropy(output, target, reduction='none')
-        loss = loss.mean(dim=-1, keepdim=True)
         loss = loss * target_weight
         loss = loss.mean()
         return loss * self.loss_weight

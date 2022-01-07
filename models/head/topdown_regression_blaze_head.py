@@ -62,7 +62,10 @@ class TopdownRegressionBlazeHead(NetBase):
         self.with_mask_layers = cfg.with_mask_layers
         self.joint_num = cfg.joint_num
         self.layers = nn.ModuleList()
-        self.make_layer(in_channels=1280, out_channels=640, num_blocks=3, stride=2)
+        self.layers.append(nn.Sequential(nn.Conv2d(in_channels=1280, out_channels=640, kernel_size=3, stride=1, padding=1, bias=False),
+                                                                              nn.BatchNorm2d(640),
+                                                                              nn.ReLU6()))
+        self.make_layer(in_channels=640, out_channels=640, num_blocks=3, stride=2)
         self.make_layer(in_channels=640, out_channels=640, num_blocks=3, stride=2)
         self.layers = nn.Sequential(*self.layers)
         self.loc_layer = nn.Sequential(nn.Conv2d(in_channels=self.in_channels,
@@ -100,7 +103,7 @@ class TopdownRegressionBlazeHead(NetBase):
             else:
                 down_samples = None
             
-            self.layers.append(InvertedResidual(in_channels=out_channels,
+            self.layers.append(InvertedResidual(in_channels=self.in_channels,
                                                                                         out_channels=out_channels,
                                                                                         stride=stride,
                                                                                         down_samples=down_samples))
@@ -116,11 +119,12 @@ class TopdownRegressionBlazeHead(NetBase):
     def get_loss(self, loss_inputs):
         input, target, target_weight = loss_inputs
 
-        loss = self.loc_loss(input[:, :self.joint_num * 2], target[:, :self.joint_num * 2], target_weight[:, :self.joint_num * 2])
+        loc_loss = self.loc_loss(input[:, :self.joint_num * 2], target[:, :self.joint_num * 2], target_weight[:, :self.joint_num * 2])
         if self.with_mask_layers:
-            loss += self.mask_loss(input[:, self.joint_num * 2:], target[:, self.joint_num * 2:], target_weight[:, self.joint_num * 2:])
+            mask_loss = self.mask_loss(input[:, self.joint_num * 2:], target[:, self.joint_num * 2:], target_weight[:, self.joint_num * 2:])
+            return [loc_loss, mask_loss, loc_loss + mask_loss]
 
-        return loss
+        return loc_loss
 
     def forward(self, x):
         x = self.layers(x)
