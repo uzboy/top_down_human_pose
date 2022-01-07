@@ -54,7 +54,7 @@ class MobileNetV2(NetBase):
 
         if isinstance(cfg.out_indices, int):
             self.out_indices = [cfg.out_indices]
-        self.out_indices = [index if index > -1 else len(self.layers) - 1 for index in self.out_indices]
+        self.out_indices = [index if index > -1 else len(self.layers) + index for index in self.out_indices]            # 输出索引
     
     def make_layer(self, out_channels, num_blocks, stride, expand_ratio):
         for i in range(num_blocks):

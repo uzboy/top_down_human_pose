@@ -30,13 +30,6 @@ class Model(nn.Module):
         if self.save_head_base is not None and not os.path.exists(self.save_head_base):
             os.makedirs(self.save_head_base)
 
-        if cfg.us_multi_gpus:
-            self.backbone = nn.DataParallel(self.backbone, device_ids=cfg.gup_ids)
-            self.head = nn.DataParallel(self.head, device_ids=cfg.gup_ids)
-
-        self.backbone = self.backbone.to(cfg.device)
-        self.backbone = self.backbone.to(cfg.device)
-
     def save_ckps(self, epoch_index):
         if self.save_backbone_base is not None and self.save_backbone_prev is not None:
             save_file_name = os.path.join(self.save_backbone_base, self.save_backbone_prev + "_%d.pth" % (epoch_index + 1))
@@ -57,5 +50,9 @@ class Model(nn.Module):
 
 def build_model(cfg):
     model = Model(cfg)
+    if cfg.us_multi_gpus:
+        model = nn.DataParallel(model, device_ids = cfg.gup_ids)
+        model = model.to(cfg.device)
+    else:
+        model = model.to(cfg.device)
     return model
-

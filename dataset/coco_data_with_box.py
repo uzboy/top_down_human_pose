@@ -20,7 +20,6 @@ class CocoDataWithBox(data.Dataset):
         self.image_size = cfg.image_size
         self.num_joints = cfg.num_joints
         self.image_root = cfg.image_root
-        self.is_train = cfg.is_train
         self.load_annotions(cfg.annotion_file)
 
         self.target_generators = build_heatmaps(cfg.heatmaps)
@@ -91,15 +90,15 @@ class CocoDataWithBox(data.Dataset):
             if x2 <= x1 or y2 <= y1:
                 continue
 
-            joints = np.zeros((self.num_joints, 3), dtype=np.float32)
+            joints = np.zeros((self.num_joints + 4, 3), dtype=np.float32)
             joints[0, :] = [x1, y1, 1]
             joints[1, :] = [x1, y2, 1]
             joints[2, :] = [x2, y2, 1]
             joints[3, :] = [x2, y1, 1]
 
             keypoints = np.array(kps_annotion['keypoints']).reshape(-1, 3)
-            joints[:, :2] = keypoints[:, :2]
-            joints[:, 2] = np.minimum(1, keypoints[:, 2])
+            joints[4:, :2] = keypoints[:, :2]
+            joints[4:, 2] = np.minimum(1, keypoints[:, 2])
 
             one_annotions = {
                 "img_url": os.path.join(self.image_root, img_url),
