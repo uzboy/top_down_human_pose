@@ -53,7 +53,8 @@ class MobileNetV2(NetBase):
             self.frozen_stages = [self.frozen_stages]
         elif isinstance(self.frozen_stages, str) and self.frozen_stages == "all":
             self.frozen_stages = [index for index in range(len(self.layers))]
-        self.frozen_stages = [index if index > -1 else len(self.layers) + index for index in self.frozen_stages]
+        if self.frozen_stages is not None:
+            self.frozen_stages = [index if index > -1 else len(self.layers) + index for index in self.frozen_stages]
 
     def make_layer(self, out_channels, num_blocks, stride, expand_ratio):
         for i in range(num_blocks):

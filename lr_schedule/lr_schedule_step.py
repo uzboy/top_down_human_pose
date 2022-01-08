@@ -23,6 +23,5 @@ class LrScheduleStep(LrScheduleBase):
                     exp = i
                     break
 
-        lr = [_lr * (self.gamma ** exp) for _lr in self.base_lr]
-        lr = max(lr, self.min_lr)
+        lr = [max(_lr * (self.gamma ** exp), self.min_lr) for _lr in self.base_lr]
         return lr

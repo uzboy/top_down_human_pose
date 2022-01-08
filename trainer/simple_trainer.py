@@ -31,7 +31,7 @@ class SimpleTrainer(TrainBase):
                 loss[-1].backward()
                 self.optimizer.step()
         
-                for index in range(self.loss_nums):
+                for index in range(len(loss)):
                     if len(loss_avgs) < (index + 1):
                         loss_avgs.append(AverageMeter())
 
@@ -40,13 +40,13 @@ class SimpleTrainer(TrainBase):
                 if batch % self.logger_freq == 0:
                     str_infos = "Epoch{}/Batch {}\tLR {:.6f}\t".format(epoch_index + 1, batch,
                                                                                                                         self.optimizer.param_groups[0]['lr'])
-                    for index in range(self.loss_nums):
-                        if index == self.loss_nums - 1:
+                    for index in range(len(loss)):
+                        if index == len(loss) - 1:
                             str_infos += "total_loss {loss_avg.val:.6f}({loss_avg.avg:.6f})".format(loss_avg=loss_avgs[index])
                         else:
                             str_infos += "loss_{} {loss_avg.val:.6f}({loss_avg.avg:.6f})".format(index + 1, loss_avg=loss_avgs[index])
                         
-                        if index != self.loss_nums - 1:
+                        if index != len(loss) - 1:
                             str_infos += "\t"
     
                     self.logger.info(str_infos)
