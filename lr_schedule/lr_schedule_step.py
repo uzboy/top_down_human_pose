@@ -4,10 +4,13 @@ from lr_schedule.lr_schedule_base import LrScheduleBase
 class LrScheduleStep(LrScheduleBase):
 
     def __init__(self, optimizer, epoch_size, cfg):
-        super(LrScheduleStep, self).__init__(optimizer, epoch_size, cfg.warmup, cfg.warmup_iters, cfg.warmup_ratio)
+        super(LrScheduleStep, self).__init__(optimizer, epoch_size,
+                                                                                     cfg.get("warmup", None),
+                                                                                     cfg.get("warmup_iters", 500),
+                                                                                     cfg.get("warmup_ratio", 0.001))
         self.step = cfg.step
-        self.gamma = cfg.gamma
-        self.min_lr = cfg.min_lr
+        self.gamma = cfg.get("gamma", 0.1)
+        self.min_lr = cfg.get("min_lr", 0)
 
     def get_lr(self, epoch_index):
         progress = epoch_index
@@ -21,6 +24,5 @@ class LrScheduleStep(LrScheduleBase):
                     break
 
         lr = [_lr * (self.gamma ** exp) for _lr in self.base_lr]
-        if self.min_lr is not None:
-            lr = max(lr, self.min_lr)
+        lr = max(lr, self.min_lr)
         return lr

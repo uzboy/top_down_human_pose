@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.nn.modules.batchnorm import BatchNorm2d
 from models.base_module import NetBase
 from loss.build_loss import build_loss
@@ -59,8 +58,7 @@ class TopdownRegressionBlazeHead(NetBase):
 
     def __init__(self, cfg):
         super(TopdownRegressionBlazeHead, self).__init__()
-        self.with_mask_layers = cfg.with_mask_layers
-        self.joint_num = cfg.joint_num
+        self.joint_num = cfg.get("joint_num", 17)
         self.layers = nn.ModuleList()
         self.layers.append(nn.Sequential(nn.Conv2d(in_channels=1280, out_channels=640, kernel_size=3, stride=1, padding=1, bias=False),
                                                                               nn.BatchNorm2d(640),
@@ -73,11 +71,11 @@ class TopdownRegressionBlazeHead(NetBase):
                                                                                                kernel_size=2,
                                                                                                stride=1,
                                                                                                padding=0))
-        if hasattr(cfg, "loc_loss") and cfg.loc_loss is not None:
-            self.loc_loss = build_loss(cfg.loc_loss)
-        else:
-            self.loc_loss = None
+        self.loc_loss = cfg.get("loc_loss", None)
+        if self.loc_loss is not None:
+            self.loc_loss = build_loss(self.loc_loss)
 
+        self.with_mask_layers = cfg.get("with_mask_layers", False)
         if self.with_mask_layers:
             self.mask_layer = nn.Sequential(nn.Conv2d(in_channels=self.in_channels,
                                                                                                         out_channels=self.joint_num,
@@ -85,10 +83,9 @@ class TopdownRegressionBlazeHead(NetBase):
                                                                                                         stride=1,
                                                                                                         padding=0),
                                                                                  nn.Sigmoid())
-            if hasattr(cfg, "mask_loss") and cfg.mask_loss is not None:
-                self.mask_loss = build_loss(cfg.mask_loss)
-            else:
-                self.mask_loss = None
+            self.mask_loss = cfg.get("mask_loss", None)
+            if self.mask_loss is not None:
+                self.mask_loss = build_loss(self.mask_loss)
 
     def make_layer(self, in_channels, out_channels, num_blocks, stride):
         self.in_channels = in_channels

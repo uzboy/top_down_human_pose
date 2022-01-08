@@ -25,13 +25,13 @@ class NormalizeTensor:
 class PhotometricDistortion:
 
     def __init__(self, brightness_delta=32, contrast_range=(0.5, 1.5), saturation_range=(0.5, 1.5), hue_delta=18,
-                                        brightness_prob=0.1, contrast_porb=0.1, saturation_prob=0.1, hue_prob=0.1):
+                                        brightness_prob=0.1, contrast_prob=0.1, saturation_prob=0.1, hue_prob=0.1):
         self.brightness_delta = brightness_delta
         self.contrast_lower, self.contrast_upper = contrast_range
         self.saturation_lower, self.saturation_upper = saturation_range
         self.hue_delta = hue_delta
         self.brightness_prob=brightness_prob
-        self.contrast_porb=contrast_porb
+        self.contrast_prob=contrast_prob
         self.saturation_prob=saturation_prob
         self.hue_prob=hue_prob
 
@@ -46,7 +46,7 @@ class PhotometricDistortion:
         return img
 
     def contrast(self, img):
-        if random.rand() < self.contrast_porb:
+        if random.rand() < self.contrast_prob:
             return self.convert(img, alpha=random.uniform(self.contrast_lower, self.contrast_upper))
         return img
 
@@ -80,7 +80,6 @@ class PhotometricDistortion:
         if mode == 0:
             img = self.contrast(img)
 
-        # self.swap_channels(img)
         return image
 
 
@@ -259,7 +258,6 @@ class TopDownRandomTranslation:
         return center
 
 
-
 class Rotation:
 
     def __init__(self, rot_factor=40, rot_prob=0.6):
@@ -306,7 +304,7 @@ class Rotation:
 
 class ExpanBorder:
 
-    def __init__(self, expan_factor=0.5, expan_prob=0.6, min_expan_factor=0.2):
+    def __init__(self, expan_factor=0.2, expan_prob=0.0, min_expan_factor=0.2):
         self.expan_factor = expan_factor
         self.expan_prob = expan_prob
         self.min_expan_factor = min_expan_factor

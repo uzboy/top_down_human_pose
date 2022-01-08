@@ -22,56 +22,49 @@ class CocoDataWithMutex(data.Dataset):
         self.image_size = cfg.image_size
         self.num_joints = cfg.num_joints
         self.image_root = cfg.image_root
-        self.is_train = cfg.is_train
         self.load_annotions(cfg.annotion_file)
+
+        self.is_train = cfg.get("is_train", False)
+        self.is_flip = cfg.get("is_flip", False)
+        self.is_half_body = cfg.get("is_half_body", False)
+        self.is_rot = cfg.get("is_rot", False)
+        self.is_pic = cfg.get("is_pic", False)
 
         if self.is_train:
             self.target_generators = build_heatmaps(cfg.heatmaps)
 
-        if hasattr(cfg, "is_flip"):
-            self.is_flip = cfg.is_flip
-        else:
-            self.is_flip = False
         if self.is_flip:
-            self.random_flip = RandomFlip(cfg.flip_prob, cfg.flip_pairs)
+            self.random_flip = RandomFlip(cfg.get("flip_prob", 0.5),
+                                                                             cfg.get("flip_pairs",  [[1, 2], [3, 4], [5, 6], [7, 8], [9, 10], [11, 12], [13, 14], [15, 16]]))
     
-        if hasattr(cfg, "is_half_body"):
-            self.is_half_body = cfg.is_half_body
-        else:
-            self.is_half_body = False
         if self.is_half_body:
             self.half_body = HalfBodyTransform(cfg.image_size,
-                                                                                        cfg.num_joints_half_body,
-                                                                                        cfg.prob_half_body,
-                                                                                        cfg.num_joints,
-                                                                                        cfg.upper_body_index,
-                                                                                        cfg.lower_body_index)
-        
-        if hasattr(cfg, "is_rot"):
-            self.is_rot = cfg.is_rot
-        else:
-            self.is_rot = False
-        if self.is_rot:
-            self.scale_rotation = GetRandomScaleRotation(cfg.rot_factor, cfg.scale_factor, cfg.rot_prob)
-
-        if hasattr(cfg, "is_pic"):
-            self.is_pic = cfg.is_pic
-        else:
-            self.is_pic = False
+                                                                                        cfg.get("num_joints_half_body", 8),
+                                                                                        cfg.get("prob_half_body", 0.3),
+                                                                                        cfg.get("num_joints", 17),
+                                                                                        cfg.get("upper_body_index", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+                                                                                        cfg.get("lower_body_index", [11, 12, 13, 14, 15, 16]))
     
+        if self.is_rot:
+            self.scale_rotation = GetRandomScaleRotation(cfg.get("rot_factor", 40),
+                                                                                                              cfg.get("scale_factor", 0.5),
+                                                                                                              cfg.get("rot_prob", 0.6))
+
+
         if self.is_pic:
-            self.pix_aug = PhotometricDistortion(cfg.brightness_delta,
-                                                                                         cfg.contrast_range,
-                                                                                         cfg.saturation_range,
-                                                                                         cfg.hue_delta,
-                                                                                         cfg.brightness_prob,
-                                                                                         cfg.contrast_prob,
-                                                                                         cfg.saturation_prob,
-                                                                                         cfg.hue_prob)
+            self.pix_aug = PhotometricDistortion(cfg.get("brightness_delta", 32),
+                                                                                         cfg.get("contrast_range", (0.5, 1.5)),
+                                                                                         cfg.get("saturation_range", (0.5, 1.5)),
+                                                                                         cfg.get("hue_delta", 18),
+                                                                                         cfg.get("brightness_prob", 0.1),
+                                                                                         cfg.get("contrast_prob", 0.1),
+                                                                                         cfg.get("saturation_prob", 0.1),
+                                                                                         cfg.get("hue_prob", 0.1))
     
         self.img_affine = Affine()
         self.to_tensor = ToTensor()
-        self.norm_image = NormalizeTensor(cfg.mean, cfg.std)
+        self.norm_image = NormalizeTensor(cfg.get("mean", [0.485, 0.456, 0.406]),
+                                                                                    cfg.get("std", [0.229, 0.224, 0.225]))
 
     def load_annotions(self, annotion_file):
         with open(annotion_file, 'r', encoding='utf-8') as f:

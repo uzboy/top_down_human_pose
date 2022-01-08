@@ -6,15 +6,8 @@ class JointsBCELoss(nn.Module):
 
     def __init__(self, cfg):
         super().__init__()
-        if hasattr(cfg, "use_target_weight"):
-            self.use_target_weight = cfg.use_target_weight
-        else:
-            self.use_target_weight = False
-
-        if hasattr(cfg, "loss_weight"):
-            self.loss_weight = cfg.loss_weight
-        else:
-            self.loss_weight = 1.
+        self.use_target_weight = cfg.get("use_target_weight", False)
+        self.loss_weight = cfg.get("loss_weight", 1.0)
 
     def forward(self, output, target, target_weight):
         B, C, _, _ = output.shape
@@ -31,15 +24,8 @@ class VisMaskBCELoss(nn.Module):
 
     def __init__(self, cfg):
         super().__init__()
-        if hasattr(cfg, "use_target_weight"):
-            self.use_target_weight = cfg.use_target_weight
-        else:
-            self.use_target_weight = False
-
-        if hasattr(cfg, "loss_weight"):
-            self.loss_weight = cfg.loss_weight
-        else:
-            self.loss_weight = 1.
+        self.use_target_weight = cfg.get("use_target_weight", False)
+        self.loss_weight = cfg.get("loss_weight", 1.0)
 
     def forward(self, output, target, target_weight):
         loss = F.binary_cross_entropy(output, target, reduction='none')

@@ -4,15 +4,14 @@ import numpy as np
 class UDPHeatmap:
 
     def __init__(self, cfg):
-        self.sigma = cfg.sigma
-        self.factor = cfg.factor
-        self.factor = cfg.factor
         self.num_joints = cfg.num_joints
         self.heatmap_size = cfg.heatmap_size
         self.image_size = cfg.image_size
-        self.use_different_joint_weights = cfg.use_different_joint_weights
-        self.joint_weights = cfg.joint_weights
-        self.is_gauss = cfg.is_gauss
+        self.sigma = cfg.get("sigma", 2)
+        self.factor = cfg.get("factor", 2)
+        self.is_gauss = cfg.get("is_gauss", True)
+        self.joint_weights = cfg.get("joint_weights", None)
+        self.use_different_joint_weights = cfg.get("use_different_joint_weights", False)
 
     def _generate_gaussian_heatmap(self, joints):
         target_weight = np.ones((self.num_joints, 1), dtype=np.float32)

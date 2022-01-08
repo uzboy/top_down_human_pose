@@ -21,34 +21,31 @@ class CocoDataWithBox(data.Dataset):
         self.num_joints = cfg.num_joints
         self.image_root = cfg.image_root
         self.load_annotions(cfg.annotion_file)
-
         self.target_generators = build_heatmaps(cfg.heatmaps)
 
-        if hasattr(cfg, "is_rot"):
-            self.is_rot = cfg.is_rot
-        else:
-            self.is_rot = False
-        if self.is_rot:
-            self.rotation = Rotation(cfg.rot_factor, cfg.rot_prob)
+        self.is_rot = cfg.get("is_rot", False)
+        self.is_pic = cfg.get("is_pic", False)
 
-        self.expan_border = ExpanBorder(cfg.expan_factor, cfg.expan_prob, cfg.min_expan_factor)
-    
-        if hasattr(cfg, "is_pic"):
-            self.is_pic = cfg.is_pic
-        else:
-            self.is_pic = False
+        self.expan_border = ExpanBorder(cfg.get("expan_factor", 0.2),
+                                                                              cfg.get("expan_prob", 0),
+                                                                              cfg.get("min_expan_factor", 0.2))
+        if self.is_rot:
+            self.rotation = Rotation(cfg.get("rot_factor", 40),
+                                                            cfg.get("rot_prob", 0.6))
         if self.is_pic:
-            self.pix_aug = PhotometricDistortion(cfg.brightness_delta,
-                                                                                         cfg.contrast_range,
-                                                                                         cfg.saturation_range,
-                                                                                         cfg.hue_delta,
-                                                                                         cfg.brightness_prob,
-                                                                                         cfg.contrast_prob,
-                                                                                         cfg.saturation_prob,
-                                                                                         cfg.hue_prob)
-        self.get_target = GetTargetSampleImage(cfg.image_size, cfg.is_shift)
+            self.pix_aug = PhotometricDistortion(cfg.get("brightness_delta", 32),
+                                                                                         cfg.get("contrast_range", (0.5, 1.5)),
+                                                                                         cfg.get("saturation_range", (0.5, 1.5)),
+                                                                                         cfg.get("hue_delta", 18),
+                                                                                         cfg.get("brightness_prob", 0.2),
+                                                                                         cfg.get("contrast_prob", 0.2),
+                                                                                         cfg.get("saturation_prob", 0.2),
+                                                                                         cfg.get("hue_prob", 0.2))
+        self.get_target = GetTargetSampleImage(cfg.image_size,
+                                                                                            cfg.get("is_shift", False))
         self.to_tensor = ToTensor()
-        self.norm_image = NormalizeTensor(cfg.mean, cfg.std)
+        self.norm_image = NormalizeTensor(cfg.get("mean", [0.485, 0.456, 0.406]),
+                                                                                    cfg.get("std", [0.229, 0.224, 0.225]))
 
     def load_annotions(self, annotion_file):
         with open(annotion_file, 'r', encoding='utf-8') as f:

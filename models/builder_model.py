@@ -12,21 +12,13 @@ class Model(nn.Module):
         self.backbone = build_backbone(cfg.backbone)
         self.head = build_head(cfg.head)
 
-        if hasattr(cfg.backbone, "pre_name") and hasattr(cfg, "base_path"):
-            self.save_backbone_prev = cfg.backbone.pre_name
-            self.save_backbone_base = cfg.backbone.base_path
-        else:
-            self.save_backbone_base = None
-            self.save_backbone_prev = None
+        self.save_backbone_prev = cfg.backbone.get("pre_name", None)
+        self.save_backbone_base = cfg.backbone.get("base_path", None)
         if self.save_backbone_base is not None and not os.path.exists(self.save_backbone_base):
             os.makedirs(self.save_backbone_base)
-
-        if hasattr(cfg.head, "pre_name") and hasattr(cfg.head, "base_path"):
-            self.save_head_prev = cfg.head.pre_name
-            self.save_head_base = cfg.head.base_path
-        else:
-            self.save_head_base = None
-            self.save_head_prev = None
+    
+        self.save_head_prev = cfg.head.get("pre_name", None)
+        self.save_head_base = cfg.head.get("base_path", None)
         if self.save_head_base is not None and not os.path.exists(self.save_head_base):
             os.makedirs(self.save_head_base)
 
@@ -50,9 +42,13 @@ class Model(nn.Module):
 
 def build_model(cfg):
     model = Model(cfg)
-    if cfg.us_multi_gpus:
+    us_multi_gpus = cfg.get("us_multi_gpus", False)
+    if us_multi_gpus:
+        assert hasattr(cfg, "gup_ids")
+        assert hasattr(cfg, "device")
         model = nn.DataParallel(model, device_ids = cfg.gup_ids)
         model = model.to(cfg.device)
     else:
-        model = model.to(cfg.device)
+        model = model.to(cfg.get("device", "cpu"))
+
     return model

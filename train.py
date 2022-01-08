@@ -22,8 +22,8 @@ if __name__ == "__main__":
     train_data_loader = DataLoader(train_dataset,
                                                                         shuffle=True,
                                                                         batch_size=cfg.data.train.batch_size,
-                                                                        pin_memory=cfg.data.train.pin_memory,
-                                                                        num_workers=cfg.data.train.num_workers,
+                                                                        pin_memory=cfg.data.train.get("pin_memory", False),
+                                                                        num_workers=cfg.data.train.get("num_workers", 4),
                                                                         drop_last=True)
 
     optimizer = build_optimizer(cfg.optimizer, model)

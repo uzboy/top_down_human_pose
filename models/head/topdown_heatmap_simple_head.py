@@ -11,47 +11,56 @@ class TopdownHeatmapSimpleHead(NetBase):
     def __init__(self, cfg):
         super(TopdownHeatmapSimpleHead, self).__init__()
 
-        self.input_transform = cfg.input_transform
-        self.in_index = cfg.in_index
-        if cfg.input_transform is not None:
-            if cfg.input_transform == 'resize_concat':
+        self.input_transform = cfg.get("input_transform", None)
+        self.in_index = cfg.get("in_index", 0)
+        if self.input_transform is not None:
+            if self.input_transform == 'resize_concat':
                 self.in_channels = sum(cfg.in_channels)
             else:
                 self.in_channels = cfg.in_channels
         else:
             self.in_channels = cfg.in_channels
 
-        self.align_corners = cfg.align_corners
+        self.align_corners = cfg.get("align_corners", False)
+        self.num_deconv_filters = cfg.get("num_deconv_filters", (256, 256, 256))
+        selfnum_deconv_kernels = cfg.get("num_deconv_kernels", (4, 4, 4))
     
-        if cfg.num_deconv_layers > 0:
-            self.deconv_layers = self._make_deconv_layer(cfg.num_deconv_layers, cfg.num_deconv_filters, cfg.num_deconv_kernels)
+        self.num_deconv_layers = cfg.get("num_deconv_layers", 3)
+        if self.num_deconv_layers > 0:
+            self.deconv_layers = self._make_deconv_layer(self.num_deconv_layers,
+                                                                                                             self.num_deconv_filters,
+                                                                                                             selfnum_deconv_kernels)
         else:
             self.deconv_layers = nn.Identity()
 
-        conv_channels = cfg.num_deconv_filters[-1] if cfg.num_deconv_layers > 0 else self.in_channels
+        conv_channels = self.num_deconv_filters[-1] if self.num_deconv_layers > 0 else self.in_channels
 
+        self.num_conv_layers = cfg.get("num_conv_layers", 0)
+        self.conv_layers_out = cfg.get("conv_layers_out", None)
+        self.conv_layer_kernel = cfg.get("conv_layer_kernel", None)
         layers = nn.ModuleList()
-        if cfg.num_conv_layers != 0:
-            for i in range(cfg.num_conv_layers):
+        if self.num_conv_layers != 0:
+            for i in range(self.num_conv_layers):
                 layers.append(nn.Conv2d(in_channels=conv_channels,
-                                                                       out_channels=cfg.conv_layers_out[i],
-                                                                       kernel_size=cfg.conv_layer_kernel[i],
+                                                                       out_channels=self.conv_layers_out[i],
+                                                                       kernel_size=self.conv_layer_kernel[i],
                                                                        stride=1,
-                                                                       padding=cfg.conv_layer_kernel[i] // 2,
+                                                                       padding=self.conv_layer_kernel[i] // 2,
                                                                        bias=False))
-                layers.append(nn.BatchNorm2d(cfg.conv_layers_out[i]))
+                layers.append(nn.BatchNorm2d(self.conv_layers_out[i]))
                 layers.append(nn.ReLU(inplace=True))
-                conv_channels = cfg.conv_layers_out[i]
+                conv_channels = self.conv_layers_out[i]
 
         layers.append(nn.Conv2d(in_channels=conv_channels, out_channels=cfg.out_channels, kernel_size=1, stride=1, padding=0))
-        if hasattr(cfg, "use_sigmoid") and cfg.use_sigmoid:
+        self.use_sigmoid = cfg.get("use_sigmoid", False)
+        if self.use_sigmoid:
             layers.append(nn.Sigmoid())
 
         self.final_layer = nn.Sequential(*layers)
 
-        
-        if hasattr(cfg, "loss") and cfg.loss is not None:
-            self.loss = build_loss(cfg.loss)
+        self.loss = cfg.get("loss", None)
+        if self.loss is not None:
+            self.loss = build_loss(self.loss)
         else:
             self.loss = None
 
@@ -70,7 +79,6 @@ class TopdownHeatmapSimpleHead(NetBase):
 
     def get_loss(self, loss_inputs):
         input, target, target_weight = loss_inputs
-        assert self.loss != None, "No Loss Function......."
         loss = self.loss(input, target, target_weight)
         return loss
 

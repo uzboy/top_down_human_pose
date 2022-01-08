@@ -4,13 +4,13 @@ import numpy as np
 class MSRAHeatmap:
 
     def __init__(self, cfg):
-        self.sigma = cfg.sigma
-        self.unbiased_encoding = cfg.unbiased_encoding
         self.num_joints = cfg.num_joints
         self.image_size = cfg.image_size
         self.heatmap_size = cfg.heatmap_size
-        self.joint_weights = cfg.joint_weights
-        self.use_different_joint_weights = cfg.use_different_joint_weights
+        self.sigma = cfg.get("sigma", 2)
+        self.unbiased_encoding = cfg.get("unbiased_encoding", False)
+        self.joint_weights = cfg.get("joint_weights", None)
+        self.use_different_joint_weights = cfg.get("use_different_joint_weights", False)
 
     def __call__(self, joints):
         W, H = self.heatmap_size

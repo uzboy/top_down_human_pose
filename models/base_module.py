@@ -4,8 +4,6 @@ from abc import abstractmethod
 
 class NetBase(nn.Module):
 
-    MAX_LAYERS = 10000
-
     def __init__(self):
         super(NetBase, self).__init__()
 
