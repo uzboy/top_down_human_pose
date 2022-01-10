@@ -24,7 +24,7 @@ data_train_cfg = edict()
 data_train_cfg.name = "CocoDataWithBox"
 data_train_cfg.image_root = "/media/gpuser/bf9802a8-1070-44ed-8869-f0612c5c7f7c/lyc/datasets/humon_pose/coco/images/"
 data_train_cfg.annotion_file = "/media/gpuser/bf9802a8-1070-44ed-8869-f0612c5c7f7c/lyc/datasets/humon_pose/coco/annotations/person_keypoints_train2017.json"
-data_train_cfg.image_size = [256, 256]          # 192
+data_train_cfg.image_size = [256, 256]
 data_train_cfg.num_joints = 17
 data_train_cfg.batch_size = 64
 

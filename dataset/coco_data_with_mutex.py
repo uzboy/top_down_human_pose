@@ -1,5 +1,4 @@
 import os
-from posixpath import join
 import cv2
 import json
 import numpy as np

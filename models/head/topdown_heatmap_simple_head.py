@@ -80,7 +80,7 @@ class TopdownHeatmapSimpleHead(NetBase):
     def get_loss(self, loss_inputs):
         input, target, target_weight = loss_inputs
         loss = self.loss(input, target, target_weight)
-        return loss
+        return {"total_loss": loss}
 
     def forward(self, x):
         x = self._transform_inputs(x)

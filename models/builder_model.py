@@ -42,8 +42,8 @@ class Model(nn.Module):
 
 def build_model(cfg):
     model = Model(cfg)
-    us_multi_gpus = cfg.get("us_multi_gpus", False)
-    if us_multi_gpus:
+    use_multi_gpus = cfg.get("use_multi_gpus", False)
+    if use_multi_gpus:
         assert hasattr(cfg, "gup_ids")
         assert hasattr(cfg, "device")
         model = nn.DataParallel(model, device_ids = cfg.gup_ids)

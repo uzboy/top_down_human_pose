@@ -2,11 +2,13 @@ import os
 from utils.utils import load_checkpoint
 from models.head.topdown_heatmap_simple_head import TopdownHeatmapSimpleHead
 from models.head.topdown_regression_blaze_head import TopdownRegressionBlazeHead
+from models.head.topdown_heatmap_and_regression_head import TopdownRegressionAndHeatmap
 
 
 HEADS = {
     "TopdownHeatmapSimpleHead":TopdownHeatmapSimpleHead,
     "TopdownRegressionBlazeHead":TopdownRegressionBlazeHead,
+    "TopdownRegressionAndHeatmap":TopdownRegressionAndHeatmap
 }
 
 

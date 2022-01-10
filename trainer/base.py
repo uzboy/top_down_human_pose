@@ -3,7 +3,7 @@ from abc import abstractmethod
 
 class TrainBase:
 
-    def __init__(self, model, data_loader, optimizer, device, lr_schedule, logger, logger_freq):
+    def __init__(self, model, data_loader, optimizer, device, lr_schedule, logger, logger_freq, update_loss):
         self.model = model
         self.data_loader = data_loader
         self.optimizer = optimizer
@@ -11,6 +11,7 @@ class TrainBase:
         self.lr_schedule = lr_schedule
         self.logger = logger
         self.logger_freq = logger_freq
+        self.update_loss = update_loss
 
     @abstractmethod
     def train_one_epoch(self, epoch_index, save_ckps):

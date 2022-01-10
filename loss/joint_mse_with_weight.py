@@ -9,29 +9,22 @@ class JointsMSEWithWeightLoss(nn.Module):
         self.use_target_weight = cfg.get("use_target_weight", False)
         self.loss_weight = cfg.get("loss_weight", 1.0)
 
-    def _compute_loss(self, pred, target):
-        pos_value = (target != 0).sum(dim=1).float()
-        pos_weight = 1 - pos_value / target.shape[-1]
-        pos_weight = pos_weight[:, None].expand_as(target)
-        loss_weight = torch.where(target != 0, pos_weight, 1 - pos_weight)
-        loss = (pred - target) ** 2 * loss_weight
-        return loss.mean()
-
     def forward(self, output, target, target_weight):
-        batch_size = output.size(0)
-        num_joints = output.size(1)
+        batch_size, num_joints, _, _ = output.shape
+        heatmaps_pred = output.reshape((batch_size, num_joints, -1))
+        heatmaps_gt = target.reshape((batch_size, num_joints, -1))
 
-        heatmaps_pred = output.reshape((batch_size, num_joints, -1)).split(1, 1)
-        heatmaps_gt = target.reshape((batch_size, num_joints, -1)).split(1, 1)
+        pos_values = (heatmaps_gt != 0).sum(dim=-1).float()
+        pos_weight = 1 - pos_values / heatmaps_gt.shape[-1]
+        pos_weight = pos_weight.expand_as(heatmaps_gt)
+        loss_weight = torch.where(heatmaps_gt != 0, pos_weight, 1 - pos_weight)
 
-        loss = 0.
+        loss = (heatmaps_pred - heatmaps_gt) ** 2 * loss_weight
+        if self.use_target_weight:
+            loss = loss.mean(dim=-1, keepdim=True)
+            loss = loss * target_weight
+            loss = loss.sum() / target_weight.sum()
+        else:
+            loss = loss.mean()
 
-        for idx in range(num_joints):
-            heatmap_pred = heatmaps_pred[idx].squeeze(1)
-            heatmap_gt = heatmaps_gt[idx].squeeze(1)
-            if self.use_target_weight:
-                loss += self._compute_loss(heatmap_pred * target_weight[:, idx], heatmap_gt * target_weight[:, idx])
-            else:
-                loss += self._compute_loss(heatmap_pred, heatmap_gt)
-
-        return loss / num_joints * self.loss_weight
+        return loss / self.loss_weight

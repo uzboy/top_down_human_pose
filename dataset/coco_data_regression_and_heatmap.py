@@ -9,19 +9,21 @@ from data_process.data_pre_process import PhotometricDistortion
 from data_process.data_pre_process import Rotation
 from data_process.data_pre_process import ExpanBorder
 from data_process.data_pre_process import GetTargetSampleImage
+from data_process.heatmaps.build_heatmap_generator import build_heatmaps
 
 
-class CocoDataRegression(data.Dataset):
+class CocoDataRegressionAndHeatmap(data.Dataset):
 
     def __init__(self, cfg):
-        super(CocoDataRegression, self).__init__()
+        super(CocoDataRegressionAndHeatmap, self).__init__()
         self.anno = []
         self.image_size = cfg.image_size
         self.num_joints = cfg.num_joints
         self.image_root = cfg.image_root
         self.load_annotions(cfg.annotion_file)
+        self.target_generators = build_heatmaps(cfg.heatmaps)
 
-        self.with_mask = cfg.get("with_mask", False)
+        self.with_mask = cfg.get("reg_with_mask", False)
         self.is_rot = cfg.get("is_rot", False)
         self.is_pic = cfg.get("is_pic", False)
 
@@ -119,22 +121,35 @@ class CocoDataRegression(data.Dataset):
 
         joints = joints[4:]
 
-        target = np.zeros((self.num_joints * 2), dtype=np.float32)
-        target_weight = np.zeros((self.num_joints * 2), dtype=np.float32)
+        heatmap_targets = []
+        heatmap_target_weights = []
+        for index in range(len(self.target_generators)):
+            target, target_weight = self.target_generators[index](joints)
+            heatmap_targets.append(np.expand_dims(target, 0))
+            heatmap_target_weights.append(np.expand_dims(target_weight, 0))
+        if len(heatmap_targets) > 1:
+            heatmap_targets = np.concatenate(heatmap_targets, axis=0)
+            heatmap_target_weights = np.concatenate(heatmap_target_weights, axis=0)
+        else:
+            heatmap_targets = heatmap_targets[0].squeeze(0)
+            heatmap_target_weights = heatmap_target_weights[0].squeeze(0)
+
+        regression_target = np.zeros((self.num_joints * 2), dtype=np.float32)
+        regression_target_weight = np.zeros((self.num_joints * 2), dtype=np.float32)
 
         for i in range(self.num_joints):
             weight = joints[i, -1]
             if weight < 1:
                 continue
-            target_weight[i * 2] = 1
-            target_weight[i * 2 + 1] = 1
-            target[i * 2 + 0] = joints[i, 0] / self.image_size[0]
-            target[i * 2 + 1] = joints[i, 1] / self.image_size[1]
+            regression_target_weight[i * 2] = 1
+            regression_target_weight[i * 2 + 1] = 1
+            regression_target[i * 2 + 0] = joints[i, 0] / self.image_size[0]
+            regression_target[i * 2 + 1] = joints[i, 1] / self.image_size[1]
 
         if self.with_mask:
-            return image, target, target_weight, joints[:, -1]
+            return image, heatmap_targets, heatmap_target_weights, regression_target, regression_target_weight, joints[:, -1]
         else:
-            return image, target, target_weight
+            return image, heatmap_targets, heatmap_target_weights, regression_target, regression_target_weight
 
     def __len__(self):
         return len(self.anno)

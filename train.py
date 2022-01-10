@@ -7,6 +7,7 @@ from models.builder_model import build_model
 from builder.build_optimizer import build_optimizer
 from trainer.simple_trainer import SimpleTrainer as Trainer
 from lr_schedule.build_lr_schedule import build_lr_schedule
+from data_process.data_collection import build_collect_func
 
 
 if __name__ == "__main__":
@@ -18,19 +19,33 @@ if __name__ == "__main__":
     logger = get_logger(cfg.logfile)
     model = build_model(cfg.model)
 
-    train_dataset = build_dataset(cfg.data.train)
+    train_dataset = build_dataset(cfg.data)
+    collate_fn = cfg.data.get("collate_fn", None)
+    if collate_fn is not None:
+        collate_fn = build_collect_func(collate_fn)
+
     train_data_loader = DataLoader(train_dataset,
                                                                         shuffle=True,
-                                                                        batch_size=cfg.data.train.batch_size,
-                                                                        pin_memory=cfg.data.train.get("pin_memory", False),
-                                                                        num_workers=cfg.data.train.get("num_workers", 4),
-                                                                        drop_last=True)
+                                                                        batch_size=cfg.data.batch_size,
+                                                                        pin_memory=cfg.data.get("pin_memory", False),
+                                                                        num_workers=cfg.data.get("num_workers", 1),
+                                                                        drop_last=True,
+                                                                        collate_fn=collate_fn)
 
     optimizer = build_optimizer(cfg.optimizer, model)
     lr_schedule = build_lr_schedule(cfg.lr_schedule, optimizer, len(train_dataset))
-    epoch_trainer = Trainer(model, train_data_loader, optimizer, cfg.device, lr_schedule, logger, cfg.logger_freq)
+    epoch_trainer = Trainer(model,
+                                                      train_data_loader,
+                                                      optimizer,
+                                                      cfg.model.get("device", "cpu"),
+                                                      lr_schedule,
+                                                      logger, cfg.get("logger_freq", 10),
+                                                      cfg.model.head.get("update_loss", "total_loss"))
 
-    for ep in range(cfg.start_epoch, cfg.end_epoch):
+    start_epoch = cfg.get("start_epoch", 0)
+    end_epoch = cfg.end_epoch
+    save_ckps_freq = cfg.get("save_ckps_freq", 1)
+    for ep in range(start_epoch, end_epoch):
         if train_dataset is not None:
-            is_save_ckps = ((ep % cfg.save_ckps_freq == 0) or (ep == cfg.end_epoch - 1))
+            is_save_ckps = ((ep % save_ckps_freq == 0) or (ep == end_epoch - 1))
             epoch_trainer(ep, is_save_ckps)

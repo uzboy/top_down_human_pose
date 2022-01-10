@@ -22,7 +22,6 @@ head_cfg.loc_loss = loc_loss_cfg
 ##################################################################################################
 mask_loss_cfg = edict()
 mask_loss_cfg.name = "VisMaskBCELoss"
-mask_loss_cfg.use_target_weight = True
 mask_loss_cfg.loss_weight = 1.0
 head_cfg.mask_loss=mask_loss_cfg
 ##################################################################################################
@@ -34,6 +33,7 @@ data_train_cfg.with_mask=True
 data_train_cfg.image_size = [256, 256]          # 192
 data_train_cfg.num_joints = 17
 data_train_cfg.batch_size = 64
+data_train_cfg.collate_fn = "data_regression_with_mask_collect_func"
 
 data_train_cfg.is_rot = True
 data_train_cfg.rot_factor = 40

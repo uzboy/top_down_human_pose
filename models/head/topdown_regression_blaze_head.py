@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 from torch.nn.modules.batchnorm import BatchNorm2d
 from models.base_module import NetBase
@@ -30,7 +29,7 @@ class InvertedResidual(nn.Module):
                                                                                                              padding=kernel_size // 2,
                                                                                                              groups=mid_channels,
                                                                                                              bias=False),
-                                                                                        BatchNorm2d(mid_channels))                # 激活，尽可能保留信息
+                                                                                        BatchNorm2d(mid_channels))
         self.attention = EcaModule(mid_channels)
 
         self.linear_conv = nn.Sequential(nn.Conv2d(in_channels=mid_channels,
@@ -60,11 +59,9 @@ class TopdownRegressionBlazeHead(NetBase):
         super(TopdownRegressionBlazeHead, self).__init__()
         self.joint_num = cfg.get("joint_num", 17)
         self.layers = nn.ModuleList()
-        self.layers.append(nn.Sequential(nn.Conv2d(in_channels=1280, out_channels=640, kernel_size=3, stride=1, padding=1, bias=False),
-                                                                              nn.BatchNorm2d(640),
-                                                                              nn.ReLU6()))
-        self.make_layer(in_channels=640, out_channels=640, num_blocks=3, stride=2)
-        self.make_layer(in_channels=640, out_channels=640, num_blocks=3, stride=2)
+
+        self.make_layer(in_channels=160, out_channels=160, num_blocks=3, stride=2)
+        self.make_layer(in_channels=160, out_channels=160, num_blocks=3, stride=2)
         self.layers = nn.Sequential(*self.layers)
         self.loc_layer = nn.Sequential(nn.Conv2d(in_channels=self.in_channels,
                                                                                                out_channels=self.joint_num * 2,
@@ -112,20 +109,26 @@ class TopdownRegressionBlazeHead(NetBase):
                 constant_init(m, 1)
 
     def get_loss(self, loss_inputs):
-        input, target, target_weight = loss_inputs
-
-        loc_loss = self.loc_loss(input[:, :self.joint_num * 2], target[:, :self.joint_num * 2], target_weight[:, :self.joint_num * 2])
+        inputs, targets, target_weights = loss_inputs
         if self.with_mask_layers:
-            mask_loss = self.mask_loss(input[:, self.joint_num * 2:], target[:, self.joint_num * 2:], target_weight[:, self.joint_num * 2:])
-            return [loc_loss, mask_loss, loc_loss + mask_loss]
-
-        return loc_loss
+            loc_loss = self.loc_loss(inputs[0], targets[0], target_weights[0])
+            mask_loss = self.mask_loss(inputs[1], targets[1], target_weights[0])
+            return {
+                "loc_loss": loc_loss,
+                "mask_loss": mask_loss,
+                "total_loss": loc_loss + mask_loss}
+        else:
+            loc_loss = self.loc_loss(inputs, targets, target_weights)
+        
+        return {
+            "total_loss": loc_loss
+        }
 
     def forward(self, x):
         x = self.layers(x)
-        out_put = self.loc_layer(x).squeeze(-1).squeeze(-1)
+        loc_out = self.loc_layer(x).squeeze(-1).squeeze(-1)
         if self.with_mask_layers:
             mask_out = self.mask_layer(x).squeeze(-1).squeeze(-1)
-            out_put = torch.cat([out_put, mask_out], dim=-1)
-        
-        return out_put
+            return loc_out, mask_out
+        else:
+            return loc_out
